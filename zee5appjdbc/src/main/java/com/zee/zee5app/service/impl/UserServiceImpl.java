@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.naming.InvalidNameException;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.zee.zee5app.dto.Register;
 import com.zee.zee5app.exception.IdNotFoundException;
@@ -15,7 +16,7 @@ import com.zee.zee5app.repository.UserRepository2;
 import com.zee.zee5app.repository.impl.UserRepositoryImpl;
 import com.zee.zee5app.service.UserService2;
 
-@Component
+@Service
 public class UserServiceImpl implements UserService2 {
 
 	private UserRepository2 userRepository;

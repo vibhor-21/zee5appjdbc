@@ -1,6 +1,8 @@
 package com.zee.zee5app.utils;
 
 // ctrl+ shift+ o
+
+
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -17,14 +19,14 @@ public class PasswordUtils {
     private static final int ITERATIONS = 10000;
     private static final int KEY_LENGTH = 256;
     
-     public static String getSalt(int length) {
+     public String getSalt(int length) {
         StringBuilder returnValue = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             returnValue.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
         }
         return new String(returnValue);
     }
-    public static byte[] hash(char[] password, byte[] salt) {
+    public byte[] hash(char[] password, byte[] salt) {
         PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_LENGTH);
         Arrays.fill(password, Character.MIN_VALUE);
         try {
@@ -36,7 +38,7 @@ public class PasswordUtils {
             spec.clearPassword();
         }
     }
-    public static String generateSecurePassword(String password, String salt) {
+    public String generateSecurePassword(String password, String salt) {
         String returnValue = null;
         byte[] securePassword = hash(password.toCharArray(), salt.getBytes());
  
@@ -45,7 +47,7 @@ public class PasswordUtils {
         return returnValue;
     }
     
-    public static boolean verifyUserPassword(String providedPassword,
+    public boolean verifyUserPassword(String providedPassword,
             String securedPassword, String salt)
     {
         boolean returnValue = false;

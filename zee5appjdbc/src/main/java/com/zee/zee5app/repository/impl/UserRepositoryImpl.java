@@ -13,8 +13,11 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.naming.InvalidNameException;
+import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import com.zee.zee5app.dto.Login;
 import com.zee.zee5app.dto.ROLE;
@@ -26,17 +29,17 @@ import com.zee.zee5app.repository.UserRepository2;
 import com.zee.zee5app.utils.DBUtils;
 import com.zee.zee5app.utils.PasswordUtils;
 
-@Component // it will create a singleton object for us.
+@Repository // it will create a singleton object for us.
 
 public class UserRepositoryImpl implements UserRepository2 {
 
-	static private UserRepository2 repository = null;
+	@Autowired // it will bring already created obj
+	DataSource dataSource;
+	PasswordUtils passwordUtils;
 	static private LoginRepo loginRepo = null;
-	static private DBUtils dbUtils = null; 
 	
 	public UserRepositoryImpl() throws IOException {
 		loginRepo = LoginRepoImpl.getInstance();
-		dbUtils = DBUtils.getInstance();
 	}
 	
 	
@@ -55,7 +58,12 @@ public class UserRepositoryImpl implements UserRepository2 {
 				+ "contactnumber,password)" + 
 				"values(?,?,?,?,?,?)";
 		
-		connection = dbUtils.getConnection();
+		try {
+			connection = dataSource.getConnection();
+		} catch (SQLException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 		
 		try {
 			preparedStatement = connection.prepareStatement(insertStatement);
@@ -66,13 +74,14 @@ public class UserRepositoryImpl implements UserRepository2 {
 			preparedStatement.setString(4, register.getEmail());
 			preparedStatement.setBigDecimal(5, register.getContactNumber());
 			
-			String salt = PasswordUtils.getSalt(30);
-			String encryptedPassword = PasswordUtils.generateSecurePassword(insertStatement, salt);
+			String salt = passwordUtils.getSalt(30);
+			String encryptedPassword = passwordUtils.generateSecurePassword(insertStatement, salt);
 			preparedStatement.setString(6, encryptedPassword);
 			
 			int result = preparedStatement.executeUpdate();
 			
 			if(result>0) {
+				connection.commit();
 				Login login = new Login();
 				login.setUserName(register.getEmail());
 				login.setPassword(encryptedPassword);
@@ -101,12 +110,7 @@ public class UserRepositoryImpl implements UserRepository2 {
 				e1.printStackTrace();
 			}
 			return "fail";
-		}
-		finally {
-			dbUtils.closeConnection(connection);
-		}
-		
-				
+		}		
 	}
 
 	@Override
@@ -124,7 +128,12 @@ public class UserRepositoryImpl implements UserRepository2 {
 		
 		String selectStatement = "select * from register where regId=?";
 		
-		connection = dbUtils.getConnection();
+		try {
+			connection = dataSource.getConnection();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			preparedStatement = connection.prepareStatement(selectStatement);
 			preparedStatement.setString(1, id);
@@ -159,9 +168,6 @@ public class UserRepositoryImpl implements UserRepository2 {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		finally {
-			dbUtils.closeConnection(connection);
-		}
 		
 		return Optional.empty();
 	}
@@ -175,7 +181,12 @@ public class UserRepositoryImpl implements UserRepository2 {
 		
 		String deleteStatement = "delete from register where regId=?";
 		
-		connection = dbUtils.getConnection();
+		try {
+			connection = dataSource.getConnection();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		try {
 			preparedStatement = connection.prepareStatement(deleteStatement);
@@ -203,9 +214,6 @@ public class UserRepositoryImpl implements UserRepository2 {
 			e.printStackTrace();
 			return "fail";
 		}
-		finally {
-			dbUtils.closeConnection(connection);
-		}
 	}
 
 
@@ -220,7 +228,12 @@ public class UserRepositoryImpl implements UserRepository2 {
 		
 		String selectStatement = "select * from register";
 		
-		connection = dbUtils.getConnection();
+		try {
+			connection = dataSource.getConnection();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			preparedStatement = connection.prepareStatement(selectStatement);
 			// to retrieve the data
@@ -252,9 +265,6 @@ public class UserRepositoryImpl implements UserRepository2 {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		finally {
-			dbUtils.closeConnection(connection);
 		}
 		return Optional.empty();
 		
